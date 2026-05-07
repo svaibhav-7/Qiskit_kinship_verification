@@ -1,76 +1,46 @@
-# Quantum Kinship Verification Pipeline
+# Quantum Kinship Verification
 
-A step-by-step implementation of quantum-based kinship detection using PennyLane.
+A quantum-classical hybrid pipeline for kinship verification using Qiskit and PyTorch. This project uses Variational Quantum Circuits (VQC) to compare face embeddings extracted from pretrained classical CNNs.
 
-## Pipeline Architecture
+## Project Structure
 
-```
-Image1  →  CNN  →  Embedding z1  →  Quantum Encoding  →  |ψ_z1⟩ ──┐
-                                                                      ├── VQC U(θ) ──► Measure ──► ŷ ∈ {0,1}
-Image2  →  CNN  →  Embedding z2  →  Quantum Encoding  →  |ψ_z2⟩ ──┘
-```
+- `src/`: Core logic and modules
+  - `quantum_core.py`: VQC circuit definitions and quantum utilities.
+  - `data_loaders.py`: Utilities for loading KinFaceW and TSKinFace datasets.
+  - `models.py`: Model classes and feature extractors (ResNet, MockCNN).
+- `scripts/`: Step-by-step learning pipeline and training scripts.
+  - `step1_setup.py`: Environment check and Bell state.
+  - `step2_quantum_encoding.py`: Angle and Amplitude encoding demo.
+  - `step3_vqc.py`: VQC and SWAP test implementation.
+  - `step4_training.py`: Synthetic data training demo.
+  - `step5_full_pipeline.py`: Full pipeline with mock data.
+  - `train_real_data.py`: Training script for real datasets (KinFaceW-II, TSKinFace).
+- `assets/`: Architecture diagrams and images.
+- `weights/`: Saved model parameters (.npy).
+- `results/`: Training logs and loss plots.
+- `requirements.txt`: Python dependencies.
+- `main.py`: Entry point for the structured pipeline.
 
-## Files — Run In Order
+## Getting Started
 
-| File | What it teaches |
-|------|----------------|
-| `step1_setup.py` | Install check, Hello Quantum World |
-| `step2_quantum_encoding.py` | Converting face embeddings → qubit states |
-| `step3_vqc.py` | Variational Quantum Circuit + SWAP test |
-| `step4_training.py` | Training loop with Parameter Shift Rule |
-| `step5_full_pipeline.py` | Complete end-to-end pipeline class |
+1.  **Install dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-## Installation
+2.  **Run the environment check:**
+    ```bash
+    python scripts/step1_setup.py
+    ```
 
-```bash
-pip install pennylane pennylane-torch torch torchvision numpy matplotlib
-```
+3.  **Train on real data:**
+    ```bash
+    python scripts/train_real_data.py
+    ```
 
-## Quick Start
+## Performance
+Initial tests on synthetic data achieved ~75% accuracy. Training on real datasets (KinFaceW, TSKinFace) is currently underway to achieve higher verification performance.
 
-```bash
-python step1_setup.py      # verify installation
-python step2_quantum_encoding.py
-python step3_vqc.py
-python step4_training.py
-python step5_full_pipeline.py
-```
-
-## Key Quantum Concepts Used
-
-- **Angle Encoding** — RY(θ) maps each feature to a qubit rotation
-- **Amplitude Encoding** — store full vector in qubit amplitudes  
-- **Variational Quantum Circuit** — trainable RZ-RY-RZ + CNOT layers
-- **Parameter Shift Rule** — exact quantum gradients (no approximation)
-- **SWAP Test** — measures fidelity |⟨ψ₁|ψ₂⟩|² between two face states
-- **Entanglement** — CNOT gates create correlations between face qubits
-
-## Configuration
-
-Edit these constants at the top of each file:
-
-```python
-N_QUBITS      = 4     # qubits per person (increase for more expressive power)
-N_LAYERS      = 3     # VQC depth
-EMBEDDING_DIM = 128   # CNN output size (128 for FaceNet, 512 for ArcFace)
-```
-
-## Replacing the Mock CNN
-
-In `step5_full_pipeline.py`, find `MockCNN` and replace with your real model:
-
-```python
-# Using deepface / FaceNet
-from deepface import DeepFace
-
-def extract_embedding(image_path):
-    result = DeepFace.represent(image_path, model_name="Facenet")
-    emb = np.array(result[0]["embedding"])
-    return emb / np.linalg.norm(emb)
-```
-
-## Real Datasets
-
-- **KinFaceW-I / KinFaceW-II** — parent-child pairs, widely used
-- **FIW (Families In the Wild)** — 1,000 families, 13 relationship types
-- **Cornell KinFace** — 150 pairs, four relationship types
+## Authors
+- Antigravity AI
+- [Your Team Name]
