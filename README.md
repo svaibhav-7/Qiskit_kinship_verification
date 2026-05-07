@@ -1,4 +1,4 @@
-# Quantum Kinship Verification
+# Quantum Kinship Verification.
 
 A quantum-classical hybrid pipeline for kinship verification using Qiskit and PyTorch. This project uses Variational Quantum Circuits (VQC) to compare face embeddings extracted from pretrained classical CNNs.
 
