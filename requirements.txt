@@ -7,3 +7,5 @@ numpy
 matplotlib
 scipy
 Pillow
+scikit-learn
+facenet-pytorch
