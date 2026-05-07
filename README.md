@@ -41,6 +41,4 @@ A quantum-classical hybrid pipeline for kinship verification using Qiskit and Py
 ## Performance
 Initial tests on synthetic data achieved ~75% accuracy. Training on real datasets (KinFaceW, TSKinFace) is currently underway to achieve higher verification performance.
 
-## Authors
-- Antigravity AI
-- [Your Team Name]
+
