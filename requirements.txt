@@ -1,0 +1,9 @@
+qiskit>=1.0.0
+qiskit-aer
+qiskit-machine-learning
+torch>=2.0.0
+torchvision
+numpy
+matplotlib
+scipy
+Pillow
