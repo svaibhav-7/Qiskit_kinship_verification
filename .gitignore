@@ -36,6 +36,7 @@ wheels/
 
 # Results and weights
 weights/*.npy
+weights/*.pkl
 results/
 *.png
 *.log
@@ -43,3 +44,6 @@ results/
 # OS
 .DS_Store
 Thumbs.db
+
+# IDE & local agent caches
+.claude/

@@ -1,54 +1,102 @@
 from qiskit import QuantumCircuit
-from qiskit.circuit import ParameterVector
-from qiskit.quantum_info import Statevector, SparsePauliOp
+from qiskit_aer import AerSimulator
 import numpy as np
 
-def build_kinship_vqc(n_qubits, n_layers):
-    """Build the parameterized kinship VQC."""
-    total_wires = 2 * n_qubits
-    n_params = n_layers * total_wires * 3
+def build_swap_test_circuit(n_qubits, z1, z2):
+    """
+    Builds a Quantum SWAP Test circuit to measure the overlap (fidelity) 
+    between two angle-encoded states |psi_z1> and |psi_z2>.
     
-    inp = ParameterVector('x', total_wires)
-    wgt = ParameterVector('w', n_params)
-    qc  = QuantumCircuit(total_wires)
-
-    # Encode both persons
-    for i in range(n_qubits):
-        qc.ry(inp[i], i)
-    for i in range(n_qubits):
-        qc.ry(inp[n_qubits + i], n_qubits + i)
-
-    # VQC layers
-    for layer in range(n_layers):
-        base = layer * total_wires * 3
-        for wire in range(total_wires):
-            idx = base + wire * 3
-            qc.rz(wgt[idx], wire)
-            qc.ry(wgt[idx+1], wire)
-            qc.rz(wgt[idx+2], wire)
-        for wire in range(total_wires):
-            qc.cx(wire, (wire + 1) % total_wires)
-        for i in range(n_qubits):
-            qc.cx(i, i + n_qubits)
-
-    return qc, inp, wgt
-
-def run_kinship_circuit(qc, inp_params, wgt_params, f1, f2, weights, z_op):
-    """Evaluate ⟨Z⟩ on qubit 0 for a pair of feature vectors."""
-    vals = np.concatenate([f1, f2])
-    param_dict = {}
-    for i, p in enumerate(inp_params):
-        param_dict[p] = float(vals[i])
-    for i, p in enumerate(wgt_params):
-        param_dict[p] = float(weights[i])
+    Args:
+        n_qubits (int): Number of qubits representing each face embedding.
+        z1 (array-like): Angle encoding parameters for Person 1 (length n_qubits).
+        z2 (array-like): Angle encoding parameters for Person 2 (length n_qubits).
+        
+    Returns:
+        qc (QuantumCircuit): The complete Qiskit QuantumCircuit.
+    """
+    # 2N + 1 qubits:
+    # - Qubit 0: Ancilla qubit
+    # - Qubits 1 ... N: Register 1 (Person 1 features)
+    # - Qubits N+1 ... 2N: Register 2 (Person 2 features)
+    total_qubits = 2 * n_qubits + 1
+    qc = QuantumCircuit(total_qubits, 1)
     
-    bound_qc = qc.assign_parameters(param_dict)
-    sv = Statevector.from_instruction(bound_qc)
-    return float(sv.expectation_value(z_op).real)
+    # 1. State preparation (Ry angle encoding)
+    for i in range(n_qubits):
+        qc.ry(float(z1[i]), 1 + i)
+        qc.ry(float(z2[i]), 1 + n_qubits + i)
+        
+    # 2. SWAP Test
+    qc.h(0) # Put ancilla in superposition
+    for i in range(n_qubits):
+        # Controlled-SWAP: swap corresponding qubits in reg 1 and reg 2 if ancilla is 1
+        qc.cswap(0, 1 + i, 1 + n_qubits + i)
+    qc.h(0) # Bring ancilla out of superposition
+    
+    # 3. Measurement of the ancilla qubit
+    qc.measure(0, 0)
+    
+    return qc
 
-def compress_embedding(emb, n_qubits):
-    """Compress high-dim embedding into n_qubits rotation angles."""
-    chunk = len(emb) // n_qubits
-    out = np.array([np.mean(emb[i*chunk:(i+1)*chunk]) for i in range(n_qubits)])
-    lo, hi = out.min(), out.max()
-    return np.pi * (out - lo) / (hi - lo + 1e-8)
+def simulate_swap_test(z1, z2, shots=1024):
+    """
+    Simulates the SWAP test circuit on AerSimulator to obtain the state fidelity.
+    
+    Args:
+        z1 (array-like): Angle parameters for Person 1.
+        z2 (array-like): Angle parameters for Person 2.
+        shots (int): Number of simulation shots.
+        
+    Returns:
+        fidelity (float): Overlap value in range [0, 1].
+    """
+    n_qubits = len(z1)
+    qc = build_swap_test_circuit(n_qubits, z1, z2)
+    
+    simulator = AerSimulator()
+    job = simulator.run(qc, shots=shots)
+    result = job.result()
+    counts = result.get_counts()
+    
+    # Get count of the state '0'
+    count_0 = counts.get('0', 0)
+    p_0 = count_0 / shots
+    
+    # Overlap fidelity = 2 * P(0) - 1
+    fidelity = 2 * p_0 - 1.0
+    return max(0.0, min(1.0, fidelity))
+
+def simulate_swap_test_batch(z1_batch, z2_batch, shots=1024):
+    """
+    Runs SWAP test simulation for a batch of feature pairs in parallel.
+    
+    Args:
+        z1_batch (np.ndarray): (Batch, n_qubits) array of angles.
+        z2_batch (np.ndarray): (Batch, n_qubits) array of angles.
+        shots (int): Number of shots.
+        
+    Returns:
+        fidelities (np.ndarray): (Batch, 1) array of overlap values.
+    """
+    batch_size = len(z1_batch)
+    n_qubits = z1_batch.shape[1]
+    
+    circuits = []
+    for i in range(batch_size):
+        qc = build_swap_test_circuit(n_qubits, z1_batch[i], z2_batch[i])
+        circuits.append(qc)
+        
+    simulator = AerSimulator()
+    job = simulator.run(circuits, shots=shots)
+    results = job.result()
+    
+    fidelities = []
+    for i in range(batch_size):
+        counts = results.get_counts(i)
+        count_0 = counts.get('0', 0)
+        p_0 = count_0 / shots
+        fidelity = 2 * p_0 - 1.0
+        fidelities.append([max(0.0, min(1.0, fidelity))])
+        
+    return np.array(fidelities)
