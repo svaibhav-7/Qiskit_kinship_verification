@@ -35,9 +35,8 @@ from sklearn.metrics import (
     accuracy_score, confusion_matrix
 )
 
-# Set non-interactive matplotlib backend
+import time
 import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
@@ -166,15 +165,21 @@ def main():
 
     # Run predictions on selected pairs
     demo_results = []
-    print("\n" + "-" * 70)
-    print(f"{'PAIR':<5} | {'RELATION':<10} | {'TRUE':<7} | {'PRED (ANALYTICAL)':<18} | {'PRED (QISKIT)':<14} | {'STATUS':<7}")
-    print("-" * 70)
+    print("\n" + "-" * 105)
+    print(f"{'PAIR':<5} | {'RELATION':<10} | {'TRUE':<7} | {'PRED (ANALYTICAL)':<18} | {'PRED (QISKIT)':<14} | {'HYBRID TIME':<12} | {'QISKIT TIME':<12} | {'STATUS':<7}")
+    print("-" * 105)
     
     for i, (p1, p2, label, rel) in enumerate(demo_pairs):
-        # Extract features
-        emb1 = cache[os.path.normcase(os.path.abspath(p1))]
-        emb2 = cache[os.path.normcase(os.path.abspath(p2))]
+        t_start = time.perf_counter()
         
+        # Extract features (real-time prediction from raw images)
+        emb1 = extractor.extract(p1)
+        emb2 = extractor.extract(p2)
+        
+        t_feat = (time.perf_counter() - t_start) * 1000
+        
+        # Analytical prediction
+        t_anal_start = time.perf_counter()
         emb1_t = torch.tensor(emb1, dtype=torch.float32).unsqueeze(0)
         emb2_t = torch.tensor(emb2, dtype=torch.float32).unsqueeze(0)
         
@@ -186,21 +191,26 @@ def main():
         # Inference
         with torch.no_grad():
             prob_anal = model(emb1_t, emb2_t, rel_t).item()
-            
-            # Run Qiskit simulation for this pair
+        t_anal_inf = (time.perf_counter() - t_anal_start) * 1000
+        
+        # Qiskit simulation prediction
+        t_qiskit_start = time.perf_counter()
+        with torch.no_grad():
             x1 = torch.cat([emb1_t, rel_t], dim=1)
             x2 = torch.cat([emb2_t, rel_t], dim=1)
             z1 = (torch.tanh(model.projection(x1)) * np.pi).squeeze().numpy()
             z2 = (torch.tanh(model.projection(x2)) * np.pi).squeeze().numpy()
             
         prob_qiskit = simulate_swap_test(z1, z2, shots=1024)
+        t_qiskit_inf = (time.perf_counter() - t_qiskit_start) * 1000
         
+        hybrid_time_ms = t_feat + t_anal_inf
         pred_label = 1 if prob_anal >= 0.5 else 0
         pred_str = "KIN" if pred_label == 1 else "NON-KIN"
         true_str = "KIN" if label == 1 else "NON-KIN"
         status_str = "CORRECT" if pred_label == label else "WRONG"
         
-        print(f"#{i+1:<4} | {rel:<10} | {true_str:<7} | {pred_str:<7} ({prob_anal*100:5.1f}%) | {prob_qiskit*100:5.1f}%       | {status_str:<7}")
+        print(f"#{i+1:<4} | {rel:<10} | {true_str:<7} | {pred_str:<7} ({prob_anal*100:5.1f}%) | {prob_qiskit*100:5.1f}%       | {hybrid_time_ms:6.1f} ms   | {t_qiskit_inf:6.1f} ms   | {status_str:<7}")
         
         demo_results.append({
             'index': i + 1,
@@ -213,9 +223,13 @@ def main():
             'pred_str': pred_str,
             'prob_anal': prob_anal,
             'prob_qiskit': prob_qiskit,
+            'time_feat': t_feat,
+            'time_anal': t_anal_inf,
+            'time_qiskit': t_qiskit_inf,
+            'hybrid_time': hybrid_time_ms,
             'status': status_str
         })
-    print("-" * 70 + "\n")
+    print("-" * 105 + "\n")
 
     # 5. Generate and Save Visual Predictions Grid Plot
     print("[4/6] Generating visual prediction grid plot...")
@@ -246,11 +260,12 @@ def main():
             f"Pair #{res['index']} ({res['relation'].upper()})\n"
             f"True: {res['true_str']} | Pred: {res['pred_str']}\n"
             f"Fidelity: {res['prob_anal']*100:.1f}%\n"
+            f"Hybrid: {res['hybrid_time']:.1f}ms | Qiskit: {res['time_qiskit']:.1f}ms\n"
             f"[{res['status']}]"
         )
         
         # Add colored border/title
-        ax.set_title(title_text, color=color, fontsize=9, fontweight='bold', pad=8)
+        ax.set_title(title_text, color=color, fontsize=8, fontweight='bold', pad=8)
         
         # Draw colored rectangle outline around the axis to visually separate correctness
         rect = mpatches.Rectangle(
@@ -260,6 +275,17 @@ def main():
         ax.add_patch(rect)
 
     plt.tight_layout(pad=3.0)
+    
+    # Show first in a python window (halting execution until closed by user)
+    print("Displaying visual prediction grid in a Python window...")
+    try:
+        # Check if window canvas exists and set title
+        if hasattr(fig.canvas, 'manager') and fig.canvas.manager is not None:
+            fig.canvas.manager.set_window_title("Real-Time Kinship Prediction Grid & Latency")
+        plt.show()
+    except Exception as e:
+        print(f"  [INFO] Could not open Python window (headless environment?): {e}")
+
     visual_grid_path = os.path.join(output_dir, "visual_predictions.png")
     plt.savefig(visual_grid_path, facecolor=fig.get_facecolor(), edgecolor='none', bbox_inches='tight')
     plt.close()
