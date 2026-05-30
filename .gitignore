@@ -34,11 +34,9 @@ wheels/
 # Jupyter
 .ipynb_checkpoints
 
-# Results and weights
+# Weights (large binary files)
 weights/*.npy
 weights/*.pkl
-results/
-*.png
 *.log
 
 # OS

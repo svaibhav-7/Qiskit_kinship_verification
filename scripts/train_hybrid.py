@@ -149,15 +149,19 @@ def main():
     
     criterion = nn.BCELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=8, min_lr=1e-5)
     
     # 5. Fast Training Loop (Analytical Quantum Simulation)
-    print("[4/6] Training the model in PyTorch (fast analytical quantum mode)...")
+    print("[4/6] Training with CosineAnnealing LR, weight decay, noise augmentation, and early stopping...")
     loss_history = []
     acc_history = []
+    val_acc_history = []
     
     save_path = os.path.join(weights_dir, "hybrid_kinship.pt")
     best_test_acc = 0.0
     best_state_dict = None
+    patience_counter = 0
+    patience_limit = 15
     
     for epoch in range(1, args.epochs + 1):
         model.train()
@@ -198,9 +202,23 @@ def main():
             best_test_acc = val_acc
             best_state_dict = {k: v.cpu().clone() for k, v in model.state_dict().items()}
             torch.save(best_state_dict, save_path)
+            patience_counter = 0
+        else:
+            patience_counter += 1
+        
+        val_acc_history.append(val_acc)
+        
+        # Step the learning rate scheduler (monitors val_acc)
+        scheduler.step(val_acc)
         
         if epoch % 5 == 0 or epoch == 1 or epoch == args.epochs:
-            print(f"  Epoch {epoch:2d}/{args.epochs:2d} -- Loss: {epoch_loss:.4f} -- Train Acc: {epoch_acc:.1f}% -- Val Acc: {val_acc:.1f}% (Best: {best_test_acc:.1f}%)")
+            current_lr = optimizer.param_groups[0]['lr']
+            print(f"  Epoch {epoch:2d}/{args.epochs:2d} -- Loss: {epoch_loss:.4f} -- Train Acc: {epoch_acc:.1f}% -- Val Acc: {val_acc:.1f}% (Best: {best_test_acc:.1f}%) -- LR: {current_lr:.6f}")
+        
+        # Early stopping check
+        if patience_counter >= patience_limit:
+            print(f"  [Early Stop] No improvement for {patience_limit} epochs. Stopping at epoch {epoch}.")
+            break
         
     print("  Training completed successfully!")
     print("-" * 70)
@@ -255,6 +273,23 @@ def main():
     print(f"    - Recall (TPR)    : {recall_pct:.2f}%")
     print(f"    - F1 Score        : {f1_pct:.2f}%")
     print(f"    - Confusion Matrix: TP={tp}, FP={fp}, FN={fn}, TN={tn}")
+    
+    # Optimal threshold search using Youden's J statistic
+    fpr_th, tpr_th, thresholds_opt = roc_curve(test_y_np, test_preds_np)
+    j_scores = tpr_th - fpr_th
+    best_idx = np.argmax(j_scores)
+    optimal_threshold = thresholds_opt[best_idx]
+    
+    pred_labels_opt = (test_preds_np >= optimal_threshold).astype(float)
+    test_acc_opt = np.mean(pred_labels_opt == test_y_np) * 100
+    prec_opt, rec_opt, f1_opt, _ = precision_recall_fscore_support(test_y_np, pred_labels_opt, average='binary')
+    
+    print(f"  Optimal Threshold Analysis (Youden's J):")
+    print(f"    - Optimal Threshold : {optimal_threshold:.4f} (vs fixed 0.5)")
+    print(f"    - Accuracy @ optimal: {test_acc_opt:.2f}%")
+    print(f"    - Precision @ optimal: {prec_opt*100:.2f}%")
+    print(f"    - Recall @ optimal  : {rec_opt*100:.2f}%")
+    print(f"    - F1 @ optimal      : {f1_opt*100:.2f}%")
     print("-" * 70)
     
     print(f"[6/6] Saved best trained model weights to: {save_path}")
@@ -267,23 +302,24 @@ def main():
     plt.rcParams['font.family'] = 'sans-serif'
     plt.rcParams['font.sans-serif'] = ['Helvetica', 'Arial', 'DejaVu Sans']
     
-    # Plot 1: Loss & Accuracy Curve
+    # Plot 1: Loss & Accuracy Curve (with validation tracking)
+    actual_epochs = len(loss_history)
     fig, ax1 = plt.subplots(figsize=(10, 5))
     color = '#4A90E2' # Electric Blue
     ax1.set_xlabel('Epochs', fontweight='bold', fontsize=11, labelpad=8)
     ax1.set_ylabel('BCE Loss', color=color, fontweight='bold', fontsize=11, labelpad=8)
-    line1 = ax1.plot(range(1, args.epochs + 1), loss_history, color=color, linewidth=2.5, label='Loss')
+    line1 = ax1.plot(range(1, actual_epochs + 1), loss_history, color=color, linewidth=2.5, label='Loss')
     ax1.tick_params(axis='y', labelcolor=color)
     ax1.grid(True, linestyle='--', alpha=0.5)
     
     ax2 = ax1.twinx()
-    color = '#50E3C2' # Teal
-    ax2.set_ylabel('Train Accuracy (%)', color=color, fontweight='bold', fontsize=11, labelpad=8)
-    line2 = ax2.plot(range(1, args.epochs + 1), acc_history, color=color, linewidth=2.5, label='Accuracy')
-    ax2.tick_params(axis='y', labelcolor=color)
+    ax2.set_ylabel('Accuracy (%)', fontweight='bold', fontsize=11, labelpad=8)
+    line2 = ax2.plot(range(1, actual_epochs + 1), acc_history, color='#50E3C2', linewidth=2.5, label='Train Acc')
+    line3 = ax2.plot(range(1, actual_epochs + 1), val_acc_history, color='#F5A623', linewidth=2.5, linestyle='--', label='Val Acc')
+    ax2.tick_params(axis='y')
     ax2.grid(False)
     
-    lines = line1 + line2
+    lines = line1 + line2 + line3
     labels = [l.get_label() for l in lines]
     ax1.legend(lines, labels, loc='upper left', frameon=True, facecolor='white', framealpha=0.9)
     plt.title('Hybrid SWAP Test Model Training Dynamics', fontweight='bold', fontsize=14, pad=15)

@@ -89,7 +89,7 @@ class HybridKinshipClassifier(nn.Module):
         super().__init__()
         self.n_qubits = n_qubits
         
-        # Expressive classical projection MLP with relation conditioning: (512 + 4) -> 128 -> n_qubits
+        # Projection MLP with relation conditioning: (512 + 4) -> 128 -> n_qubits
         self.projection = nn.Sequential(
             nn.Linear(512 + 4, 128),
             nn.ReLU(),

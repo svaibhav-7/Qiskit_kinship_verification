@@ -1,0 +1,252 @@
+{
+  "train_metrics": {
+    "accuracy": 50.0,
+    "balanced_accuracy": 50.0,
+    "precision": 50.0,
+    "recall": 100.0,
+    "f1": 66.66666666666666,
+    "roc_auc": 50.0,
+    "average_precision": 50.0,
+    "threshold": 0.2,
+    "tp": 2200,
+    "fp": 2200,
+    "fn": 0,
+    "tn": 0,
+    "confusion_matrix": [
+      [
+        0,
+        2200
+      ],
+      [
+        0,
+        2200
+      ]
+    ]
+  },
+  "test_metrics": {
+    "accuracy": 50.0,
+    "balanced_accuracy": 50.0,
+    "precision": 50.0,
+    "recall": 100.0,
+    "f1": 66.66666666666666,
+    "roc_auc": 50.0,
+    "average_precision": 50.0,
+    "threshold": 0.2,
+    "tp": 533,
+    "fp": 533,
+    "fn": 0,
+    "tn": 0,
+    "confusion_matrix": [
+      [
+        0,
+        533
+      ],
+      [
+        0,
+        533
+      ]
+    ]
+  },
+  "threshold_cv_score": 0.5666666666666667,
+  "train_pairs": 4400,
+  "test_pairs": 1066,
+  "backbone": "facenet",
+  "expert_weight": 0.7,
+  "train_relation_metrics": {
+    "fd": {
+      "accuracy": 50.0,
+      "balanced_accuracy": 50.0,
+      "precision": 50.0,
+      "recall": 100.0,
+      "f1": 66.66666666666666,
+      "roc_auc": 50.0,
+      "average_precision": 50.0,
+      "threshold": 0.2,
+      "tp": 550,
+      "fp": 550,
+      "fn": 0,
+      "tn": 0,
+      "confusion_matrix": [
+        [
+          0,
+          550
+        ],
+        [
+          0,
+          550
+        ]
+      ]
+    },
+    "fs": {
+      "accuracy": 50.0,
+      "balanced_accuracy": 50.0,
+      "precision": 50.0,
+      "recall": 100.0,
+      "f1": 66.66666666666666,
+      "roc_auc": 50.0,
+      "average_precision": 50.0,
+      "threshold": 0.2,
+      "tp": 550,
+      "fp": 550,
+      "fn": 0,
+      "tn": 0,
+      "confusion_matrix": [
+        [
+          0,
+          550
+        ],
+        [
+          0,
+          550
+        ]
+      ]
+    },
+    "md": {
+      "accuracy": 50.0,
+      "balanced_accuracy": 50.0,
+      "precision": 50.0,
+      "recall": 100.0,
+      "f1": 66.66666666666666,
+      "roc_auc": 50.0,
+      "average_precision": 50.0,
+      "threshold": 0.2,
+      "tp": 550,
+      "fp": 550,
+      "fn": 0,
+      "tn": 0,
+      "confusion_matrix": [
+        [
+          0,
+          550
+        ],
+        [
+          0,
+          550
+        ]
+      ]
+    },
+    "ms": {
+      "accuracy": 50.0,
+      "balanced_accuracy": 50.0,
+      "precision": 50.0,
+      "recall": 100.0,
+      "f1": 66.66666666666666,
+      "roc_auc": 50.0,
+      "average_precision": 50.0,
+      "threshold": 0.2,
+      "tp": 550,
+      "fp": 550,
+      "fn": 0,
+      "tn": 0,
+      "confusion_matrix": [
+        [
+          0,
+          550
+        ],
+        [
+          0,
+          550
+        ]
+      ]
+    }
+  },
+  "test_relation_metrics": {
+    "fd": {
+      "accuracy": 50.0,
+      "balanced_accuracy": 50.0,
+      "precision": 50.0,
+      "recall": 100.0,
+      "f1": 66.66666666666666,
+      "roc_auc": 50.0,
+      "average_precision": 50.0,
+      "threshold": 0.2,
+      "tp": 134,
+      "fp": 134,
+      "fn": 0,
+      "tn": 0,
+      "confusion_matrix": [
+        [
+          0,
+          134
+        ],
+        [
+          0,
+          134
+        ]
+      ]
+    },
+    "fs": {
+      "accuracy": 50.0,
+      "balanced_accuracy": 50.0,
+      "precision": 50.0,
+      "recall": 100.0,
+      "f1": 66.66666666666666,
+      "roc_auc": 50.0,
+      "average_precision": 50.0,
+      "threshold": 0.2,
+      "tp": 156,
+      "fp": 156,
+      "fn": 0,
+      "tn": 0,
+      "confusion_matrix": [
+        [
+          0,
+          156
+        ],
+        [
+          0,
+          156
+        ]
+      ]
+    },
+    "md": {
+      "accuracy": 50.0,
+      "balanced_accuracy": 50.0,
+      "precision": 50.0,
+      "recall": 100.0,
+      "f1": 66.66666666666666,
+      "roc_auc": 50.0,
+      "average_precision": 50.0,
+      "threshold": 0.2,
+      "tp": 127,
+      "fp": 127,
+      "fn": 0,
+      "tn": 0,
+      "confusion_matrix": [
+        [
+          0,
+          127
+        ],
+        [
+          0,
+          127
+        ]
+      ]
+    },
+    "ms": {
+      "accuracy": 50.0,
+      "balanced_accuracy": 50.0,
+      "precision": 50.0,
+      "recall": 100.0,
+      "f1": 66.66666666666666,
+      "roc_auc": 50.0,
+      "average_precision": 50.0,
+      "threshold": 0.2,
+      "tp": 116,
+      "fp": 116,
+      "fn": 0,
+      "tn": 0,
+      "confusion_matrix": [
+        [
+          0,
+          116
+        ],
+        [
+          0,
+          116
+        ]
+      ]
+    }
+  },
+  "artifact_save_error": null
+}

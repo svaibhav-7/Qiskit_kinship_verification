@@ -25,9 +25,14 @@ def main():
     if os.path.exists(weights_path):
         try:
             state_dict = torch.load(weights_path)
-            # Find qubits count dynamically from the last linear layer in the sequential projection (handling both 3-module and 4-module sequential projection)
+            # Find qubits count dynamically from the last linear layer in the sequential projection
+            # Original: projection.3.bias, BatchNorm variant: projection.4.bias, Deep: projection.12.bias
             if 'projection.3.bias' in state_dict:
                 n_qubits = state_dict['projection.3.bias'].shape[0]
+            elif 'projection.4.bias' in state_dict:
+                n_qubits = state_dict['projection.4.bias'].shape[0]
+            elif 'projection.12.bias' in state_dict:
+                n_qubits = state_dict['projection.12.bias'].shape[0]
             elif 'projection.2.bias' in state_dict:
                 n_qubits = state_dict['projection.2.bias'].shape[0]
             print(f"  [INFO] Detected checkpoint configuration: n_qubits={n_qubits}")
