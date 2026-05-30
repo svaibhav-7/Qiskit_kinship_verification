@@ -17,7 +17,7 @@ The network is conditioned on the relationship category (Father-Daughter, Father
   - `test_pipeline_timing.py`: Comprehensive 5-test benchmark comparing analytical vs Qiskit simulation performance.
 - **`weights/`**: Directory for model checkpoints and caches.
   - `hybrid_kinship.pt`: Best-performing trained projection model weights checkpoint.
-- **`results/`**: Training metrics plots (Loss & Accuracy), ROC-AUC curves, score distributions, and performance benchmark outputs.
+- **`results/`**: Training metrics plots (Loss & Accuracy), ROC-AUC curves, score distributions, and performance benchmark outputs (organized in subfolders `training_metrics/`, `timing_benchmarks/`, and `real_time_test/`).
 - **`main.py`**: Clean interactive demonstration entry point.
 
 ---
@@ -58,7 +58,7 @@ The model achieves a **68.11%** validation accuracy on the test set of KinFaceW-
 * **Precision / Recall (TPR) / F1-Score**: **67.58% / 69.61% / 68.58%**
 * **ROC-AUC**: **0.7257**
 
-Training curves, ROC-AUC, and overlap probability distributions are saved in the `results/` folder.
+Training curves, ROC-AUC, and overlap probability distributions are saved in the `results/training_metrics/` folder.
 
 ---
 
@@ -162,47 +162,46 @@ This formula is **mathematically identical** to the SWAP test circuit output (in
 ### Training Curves
 
 <p align="center">
-  <img src="results/training_loss.png" width="400" alt="Training Loss"/>
-  <img src="results/training_metrics.png" width="400" alt="Training Metrics"/>
+  <img src="results/training_metrics/training_metrics.png" width="800" alt="Training Metrics"/>
 </p>
 
 ### ROC Curve & Score Distribution
 
 <p align="center">
-  <img src="results/roc_curve.png" width="400" alt="ROC Curve"/>
-  <img src="results/score_distribution.png" width="400" alt="Score Distribution"/>
+  <img src="results/training_metrics/roc_curve.png" width="400" alt="ROC Curve"/>
+  <img src="results/training_metrics/score_distribution.png" width="400" alt="Score Distribution"/>
 </p>
 
 ### Performance Benchmarks
 
 #### Analytical vs Qiskit Execution Time (Log Scale)
 <p align="center">
-  <img src="results/timing_analytical_vs_qiskit.png" width="600" alt="Analytical vs Qiskit"/>
+  <img src="results/timing_benchmarks/timing_analytical_vs_qiskit.png" width="600" alt="Analytical vs Qiskit"/>
 </p>
 
 #### Per-Stage Stacked Breakdown
 <p align="center">
-  <img src="results/timing_stacked_breakdown.png" width="600" alt="Stacked Breakdown"/>
+  <img src="results/timing_benchmarks/timing_stacked_breakdown.png" width="600" alt="Stacked Breakdown"/>
 </p>
 
 #### Speedup Factor
 <p align="center">
-  <img src="results/timing_speedup_factor.png" width="600" alt="Speedup Factor"/>
+  <img src="results/timing_benchmarks/timing_speedup_factor.png" width="600" alt="Speedup Factor"/>
 </p>
 
 #### Shot Count vs Circuit Time
 <p align="center">
-  <img src="results/timing_shots_vs_time.png" width="600" alt="Shot Count vs Time"/>
+  <img src="results/timing_benchmarks/timing_shots_vs_time.png" width="600" alt="Shot Count vs Time"/>
 </p>
 
 #### Per-Pair Inference Latency
 <p align="center">
-  <img src="results/timing_per_pair_latency.png" width="600" alt="Per-Pair Latency"/>
+  <img src="results/timing_benchmarks/timing_per_pair_latency.png" width="600" alt="Per-Pair Latency"/>
 </p>
 
 #### Combined Dashboard
 <p align="center">
-  <img src="results/timing_dashboard.png" width="800" alt="Timing Dashboard"/>
+  <img src="results/timing_benchmarks/timing_dashboard.png" width="800" alt="Timing Dashboard"/>
 </p>
 
 ---
