@@ -640,7 +640,7 @@ def main():
     banner("QUANTUM KINSHIP VERIFICATION -- PIPELINE TEST & TIMING BENCHMARK", '#')
     
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    results_dir = os.path.join(project_root, "results")
+    results_dir = os.path.join(project_root, "results", "timing_benchmarks")
     os.makedirs(results_dir, exist_ok=True)
     
     total_start = time.perf_counter()
