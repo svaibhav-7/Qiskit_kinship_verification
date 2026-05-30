@@ -208,4 +208,4 @@ This formula is **mathematically identical** to the SWAP test circuit output (in
 
 ## License
 
-This project is for academic and research purposes.
+This project is licensed under the [MIT License](LICENSE).
