@@ -151,15 +151,15 @@ def main():
     print("  Ensuring test set embeddings are cached...")
     cache = cache_face_embeddings(test_pairs, extractor, cache_path)
 
-    # 4. Select random subset of 10 pairs (5 Kin, 5 Non-kin) for visual demo
-    print("\n[3/6] Selecting 10 random sample pairs (5 Kin, 5 Non-Kin)...")
+    # 4. Select random subset of 15 pairs (8 Kin, 7 Non-kin) for visual demo
+    print("\n[3/6] Selecting 15 random sample pairs (8 Kin, 7 Non-Kin)...")
     kin_pairs = [p for p in test_pairs if p[2] == 1]
     non_kin_pairs = [p for p in test_pairs if p[2] == 0]
 
     # Deterministic random selection for reproducibility of visuals, yet representative
     rng = random.Random(42)
-    selected_kin = rng.sample(kin_pairs, min(5, len(kin_pairs)))
-    selected_non_kin = rng.sample(non_kin_pairs, min(5, len(non_kin_pairs)))
+    selected_kin = rng.sample(kin_pairs, min(8, len(kin_pairs)))
+    selected_non_kin = rng.sample(non_kin_pairs, min(7, len(non_kin_pairs)))
     demo_pairs = selected_kin + selected_non_kin
     rng.shuffle(demo_pairs) # Shuffle to mix them up
 
@@ -231,14 +231,17 @@ def main():
         })
     print("-" * 105 + "\n")
 
-    # 5. Generate and Save Visual Predictions Grid Plot
-    print("[4/6] Generating visual prediction grid plot...")
-    fig = plt.figure(figsize=(15, 8))
-    fig.patch.set_facecolor(COLOR_PALETTE['bg_dark'])
+    # 5. Generate Visual Predictions Plots
+    print("[4/6] Generating visual prediction plots (combined grid and 15 individual windows)...")
     
-    # 2 rows, 5 columns of pairs (each cell contains 2 images side-by-side)
+    # 5a. Create combined grid plot (3 rows, 5 columns)
+    grid_fig = plt.figure(1000, figsize=(18, 10))
+    grid_fig.patch.set_facecolor(COLOR_PALETTE['bg_dark'])
+    
     for idx, res in enumerate(demo_results):
-        ax = plt.subplot(2, 5, idx + 1)
+        # Plot on the combined grid figure
+        plt.figure(grid_fig.number)
+        ax = plt.subplot(3, 5, idx + 1)
         ax.set_facecolor(COLOR_PALETTE['bg_card'])
         
         # Load and resize images
@@ -253,9 +256,7 @@ def main():
         ax.imshow(combined_img)
         ax.axis('off')
         
-        # Determine title color based on correctness
         color = COLOR_PALETTE['correct'] if res['status'] == "CORRECT" else COLOR_PALETTE['incorrect']
-        
         title_text = (
             f"Pair #{res['index']} ({res['relation'].upper()})\n"
             f"True: {res['true_str']} | Pred: {res['pred_str']}\n"
@@ -263,32 +264,75 @@ def main():
             f"Hybrid: {res['hybrid_time']:.1f}ms | Qiskit: {res['time_qiskit']:.1f}ms\n"
             f"[{res['status']}]"
         )
-        
-        # Add colored border/title
         ax.set_title(title_text, color=color, fontsize=8, fontweight='bold', pad=8)
-        
-        # Draw colored rectangle outline around the axis to visually separate correctness
         rect = mpatches.Rectangle(
             (-0.02, -0.02), 1.04, 1.04, transform=ax.transAxes,
             fill=False, color=color, linewidth=2, clip_on=False
         )
         ax.add_patch(rect)
+        
+        # 5b. Create individual figure for this pair
+        indiv_fig = plt.figure(idx + 100, figsize=(6, 4.5))
+        indiv_fig.patch.set_facecolor(COLOR_PALETTE['bg_dark'])
+        ax_ind = indiv_fig.add_subplot(111)
+        ax_ind.set_facecolor(COLOR_PALETTE['bg_card'])
+        
+        # Load larger images for individual window
+        im1_l = Image.open(res['img1_path']).convert('RGB').resize((200, 200))
+        im2_l = Image.open(res['img2_path']).convert('RGB').resize((200, 200))
+        combined_img_l = Image.new('RGB', (410, 200), (30, 41, 59))
+        combined_img_l.paste(im1_l, (0, 0))
+        combined_img_l.paste(im2_l, (210, 0))
+        
+        ax_ind.imshow(combined_img_l)
+        ax_ind.axis('off')
+        
+        indiv_title = (
+            f"Pair #{res['index']} ({res['relation'].upper()}) - Prediction: {res['status']}\n"
+            f"True Status: {res['true_str']} | Predicted Status: {res['pred_str']}\n"
+            f"Analytical Fidelity: {res['prob_anal']*100:.2f}% | Qiskit: {res['prob_qiskit']*100:.2f}%\n"
+            f"Hybrid Inference Time: {res['hybrid_time']:.1f} ms (Feature Ext: {res['time_feat']:.1f} ms + MLP: {res['time_anal']:.1f} ms)\n"
+            f"Qiskit Simulator Time: {res['time_qiskit']:.1f} ms"
+        )
+        ax_ind.set_title(indiv_title, color=color, fontsize=9, fontweight='bold', pad=10)
+        rect_ind = mpatches.Rectangle(
+            (-0.01, -0.01), 1.02, 1.02, transform=ax_ind.transAxes,
+            fill=False, color=color, linewidth=3, clip_on=False
+        )
+        ax_ind.add_patch(rect_ind)
+        
+        # Save individual plot BEFORE show()
+        indiv_plot_path = os.path.join(output_dir, f"pair_{res['index']}.png")
+        plt.figure(indiv_fig.number)
+        plt.tight_layout()
+        plt.savefig(indiv_plot_path, facecolor=indiv_fig.get_facecolor(), edgecolor='none')
 
+    # Save the combined grid plot BEFORE show()
+    plt.figure(grid_fig.number)
     plt.tight_layout(pad=3.0)
+    visual_grid_path = os.path.join(output_dir, "visual_predictions.png")
+    plt.savefig(visual_grid_path, facecolor=grid_fig.get_facecolor(), edgecolor='none', bbox_inches='tight')
     
-    # Show first in a python window (halting execution until closed by user)
-    print("Displaying visual prediction grid in a Python window...")
+    print("Opening 15 visual prediction windows in Python...")
     try:
-        # Check if window canvas exists and set title
-        if hasattr(fig.canvas, 'manager') and fig.canvas.manager is not None:
-            fig.canvas.manager.set_window_title("Real-Time Kinship Prediction Grid & Latency")
+        # Set window title for grid figure
+        if hasattr(grid_fig.canvas, 'manager') and grid_fig.canvas.manager is not None:
+            grid_fig.canvas.manager.set_window_title("Real-Time Kinship Predictions - Combined Grid")
+            
+        # Set window titles for individual figures
+        for idx in range(len(demo_results)):
+            fig_num = idx + 100
+            f = plt.figure(fig_num)
+            if hasattr(f.canvas, 'manager') and f.canvas.manager is not None:
+                f.canvas.manager.set_window_title(f"Pair #{idx+1} Prediction Details")
+                
+        # This will open all 16 figures (15 individual + 1 grid) simultaneously in separate desktop windows!
         plt.show()
     except Exception as e:
-        print(f"  [INFO] Could not open Python window (headless environment?): {e}")
+        print(f"  [INFO] Could not open Python windows (headless environment?): {e}")
 
-    visual_grid_path = os.path.join(output_dir, "visual_predictions.png")
-    plt.savefig(visual_grid_path, facecolor=fig.get_facecolor(), edgecolor='none', bbox_inches='tight')
-    plt.close()
+    # Close all figures to free memory
+    plt.close('all')
     print(f"  [OK] Saved visual comparison grid to: {visual_grid_path}")
 
     # 6. Evaluate all pairs to compute overall metrics
