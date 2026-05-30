@@ -40,7 +40,7 @@ def main():
     # 1. Project Directory Configuration
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     weights_dir = os.path.join(project_root, "weights")
-    results_dir = os.path.join(project_root, "results")
+    results_dir = os.path.join(project_root, "results", "training_metrics")
     os.makedirs(weights_dir, exist_ok=True)
     os.makedirs(results_dir, exist_ok=True)
     

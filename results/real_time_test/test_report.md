@@ -1,6 +1,6 @@
 # KinFaceW-I Real-Time Evaluation Report
 
-**Generated Date:** 2026-05-30 13:35:23
+**Generated Date:** 2026-05-30 14:00:45
 **Model Configuration:** Hybrid Quantum Kinship Classifier (8 qubits, conditioned projection layer)
 
 ---
@@ -30,21 +30,21 @@ Here is the breakdown of the 10 random sample pairs evaluated and visualized in 
 
 | Pair # | Relation | True Status | Pred Status | Analytical Fidelity | Qiskit Simulation | Status |
 |--------|----------|-------------|-------------|---------------------|-------------------|--------|
-| 1 | FS | KIN | KIN | 71.98% | 67.77% | **CORRECT** |
-| 2 | FD | KIN | NON-KIN | 39.01% | 37.50% | **WRONG** |
-| 3 | MS | NON-KIN | NON-KIN | 21.57% | 16.99% | **CORRECT** |
-| 4 | FS | NON-KIN | NON-KIN | 13.87% | 11.52% | **CORRECT** |
-| 5 | FS | KIN | NON-KIN | 4.95% | 9.77% | **WRONG** |
-| 6 | FS | KIN | KIN | 63.28% | 58.40% | **CORRECT** |
-| 7 | FD | KIN | KIN | 58.00% | 57.62% | **CORRECT** |
-| 8 | FD | NON-KIN | KIN | 51.15% | 49.02% | **WRONG** |
-| 9 | FD | KIN | KIN | 90.73% | 89.65% | **CORRECT** |
-| 10 | FS | NON-KIN | KIN | 59.77% | 57.23% | **WRONG** |
-| 11 | FD | NON-KIN | KIN | 54.29% | 51.76% | **WRONG** |
-| 12 | FS | KIN | KIN | 67.72% | 70.31% | **CORRECT** |
-| 13 | MS | NON-KIN | KIN | 74.46% | 75.59% | **WRONG** |
-| 14 | FD | KIN | NON-KIN | 34.59% | 30.66% | **WRONG** |
-| 15 | FD | NON-KIN | NON-KIN | 36.09% | 31.84% | **CORRECT** |
+| 1 | FS | KIN | KIN | 71.98% | 71.09% | **CORRECT** |
+| 2 | FD | KIN | NON-KIN | 39.01% | 38.28% | **WRONG** |
+| 3 | MS | NON-KIN | NON-KIN | 21.57% | 22.46% | **CORRECT** |
+| 4 | FS | NON-KIN | NON-KIN | 13.87% | 7.62% | **CORRECT** |
+| 5 | FS | KIN | NON-KIN | 4.95% | 0.39% | **WRONG** |
+| 6 | FS | KIN | KIN | 63.28% | 60.16% | **CORRECT** |
+| 7 | FD | KIN | KIN | 58.00% | 58.79% | **CORRECT** |
+| 8 | FD | NON-KIN | KIN | 51.15% | 51.37% | **WRONG** |
+| 9 | FD | KIN | KIN | 90.73% | 90.82% | **CORRECT** |
+| 10 | FS | NON-KIN | KIN | 59.77% | 59.18% | **WRONG** |
+| 11 | FD | NON-KIN | KIN | 54.29% | 55.08% | **WRONG** |
+| 12 | FS | KIN | KIN | 67.72% | 69.53% | **CORRECT** |
+| 13 | MS | NON-KIN | KIN | 74.46% | 72.46% | **WRONG** |
+| 14 | FD | KIN | NON-KIN | 34.59% | 32.81% | **WRONG** |
+| 15 | FD | NON-KIN | NON-KIN | 36.09% | 34.18% | **CORRECT** |
 
 ---
 
