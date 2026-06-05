@@ -37,6 +37,7 @@ wheels/
 # Weights (large binary files)
 weights/*.npy
 weights/*.pkl
+weights/*.bak
 *.log
 
 # OS
@@ -45,3 +46,6 @@ Thumbs.db
 
 # IDE & local agent caches
 .claude/
+
+# Documents
+paper/
